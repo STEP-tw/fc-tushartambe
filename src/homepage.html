@@ -9,7 +9,6 @@
       }
       .imageAndLinks {
         display: flex;
-        justify-content: space-evenly;
       }
       .title {
         color: orange;
@@ -23,7 +22,21 @@
       .linksToPAges {
         margin-top: 250px;
       }
+      body {
+        margin: 30px;
+      }
     </style>
+    <script>
+      window.onload = () => {
+        let wateringJar = document.getElementById("wateringJar");
+        wateringJar.onclick = () => {
+          wateringJar.style.display = "none";
+          setTimeout(() => {
+            wateringJar.style.display = "block";
+          }, 1000);
+        };
+      };
+    </script>
   </head>
   <body>
     <div id="main_div" class="mainDiv">
@@ -33,13 +46,16 @@
           <img src="/images/freshorigins.jpg" alt="Flower" />
         </div>
         <div id="links_to_pages">
-          <ul class="linksToPAges">
-            <li><a href="/src/Abeliophyllum.html">Abeliophyllum</a></li>
-            <li><a href="/src/Ageratum.html">Ageratum</a></li>
-          </ul>
-
-          <img src="/images/wateringJar.gif" alt="wateringJar" /> <br />
-          <a href="/src/guestBook.html">Guest Book</a>
+          <div id="pageLinks">
+            <ul class="linksToPAges">
+              <li><a href="/src/Abeliophyllum.html">Abeliophyllum</a></li>
+              <li><a href="/src/Ageratum.html">Ageratum</a></li>
+            </ul>
+          </div>
+          <div id="wateringJar">
+            <img src="/images/wateringJar.gif" alt="wateringJar" />
+          </div>
+          <div id="guestBook"><a href="/src/guestBook.html">Guest Book</a></div>
         </div>
       </div>
     </div>
