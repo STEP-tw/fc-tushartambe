@@ -26,7 +26,7 @@ const app = (req, res) => {
             res.end();
           });
         } else {
-          res.end();
+          send(res, req.url + " Not Found", 404);
         }
       });
     }
