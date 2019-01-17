@@ -14,25 +14,24 @@ const send = (res, content, statusCode = 200) => {
   res.end();
 };
 
-const app = (req, res) => {
-  try {
-    if (req.url == "/") {
-      html.homePage(req, res);
-    } else {
-      fs.exists("." + req.url, exists => {
-        if (exists) {
-          fs.readFile("." + req.url, (err, content) => {
-            res.write(content);
-            res.end();
-          });
-        } else {
-          send(res, req.url + " Not Found", 404);
-        }
-      });
-    }
-  } catch (err) {}
+const getUrls = function(req) {
+  if (req.url == "/") {
+    return "./src/homepage.html";
+  }
+  return "." + req.url;
 };
 
-// Export a function that can act as a handler
+const app = (req, res) => {
+  let fileUrl = getUrls(req);
+  fs.exists(fileUrl, exists => {
+    if (exists) {
+      fs.readFile(fileUrl, (err, content) => {
+        send(res, content);
+      });
+    } else {
+      send(res, req.url + " Not Found", 404);
+    }
+  });
+};
 
 module.exports = app;
