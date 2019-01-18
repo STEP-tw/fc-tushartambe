@@ -21,7 +21,7 @@ const simplifyIntoObject = function(content) {
   let name = splittedData[0].split("=")[1];
 
   let userComment = splittedData[1].split("=")[1];
-  let comment = userComment.replace("+", " ");
+  let comment = userComment.replace(/\+/g, " ");
 
   let date = new Date().toString();
   let time = date.slice(0, date.search("GMT"));
