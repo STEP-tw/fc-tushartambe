@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Guest Book</title>
+    <style>
+      header {
+        text-align: center;
+        color: orange;
+      }
+      .commentHeader {
+        font-size: 25px;
+      }
+      .formElements {
+        margin: 15px;
+        font-size: 25px;
+      }
+      .submitButton {
+        width: 100px;
+        height: 30px;
+        font-size: 20px;
+      }
+      .allCommentsView {
+        border-top: 1px solid black;
+      }
+      table {
+        empty-cells: show;
+      }
+      td {
+        /* font-size: 25px; */
+        width: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1><a href="/"> << </a> Guest Book</h1>
+    </header>
+    <div id="commentsForm">
+      <form name="guestComments" method="POST">
+        <div class="commentHeader formElements">
+          <strong> Leave a Comment</strong>
+        </div>
+        <section class="formElements">
+          Name : <input style="width: 200px" type="text" name="guestName" />
+        </section>
+        <section class="formElements">
+          Comment : <textarea rows="4" cols="40" name="comment"></textarea>
+        </section>
+        <section class="formElements">
+          <input class="submitButton" type="submit" />
+        </section>
+      </form>
+    </div>
+    <div id="allComments" class="allCommentsView">
+      <table>
+        <thead>
+          <tr>
+            <td>DATE</td>
+            <td>NAME</td>
+            <td>COMMENT</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </body>
+</html>
