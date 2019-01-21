@@ -1,55 +1,16 @@
 const fs = require("fs");
+const {
+  generateTableForComments,
+  simplifyIntoObject
+} = require("./createTable");
+
 let allComments = require("../comments.json");
 
 const send = (res, content, statusCode = 200) => {
   res.statusCode = statusCode;
   res.write(content);
   res.end();
-};
-
-const simplifyIntoObject = function(content) {
-  let splittedData = content.split("&");
-
-  let name = splittedData[0].split("=")[1];
-
-  let userComment = splittedData[1].split("=")[1];
-  let comment = userComment.replace(/\+/g, " ");
-
-  let date = new Date().toString();
-  let time = date.slice(0, date.search("GMT"));
-
-  let timeId = Date.now();
-
-  return {
-    name,
-    comment,
-    time,
-    timeId
-  };
-};
-
-const withTags = function(tag, content) {
-  return ["<", tag, ">", content, "<", "/", tag, ">"].join("");
-};
-
-const makeTableRow = function(time, name, comment) {
-  let timeTd = withTags("td", time);
-  let nameTd = withTags("td", name);
-  let commentTd = withTags("td", comment);
-  return withTags("tr", timeTd + nameTd + commentTd);
-};
-
-const generateTableForComments = function(comments) {
-  let commentsTable = "";
-  for (let counter = 0; counter < comments.length; counter++) {
-    commentsTable += makeTableRow(
-      comments[counter].time,
-      comments[counter].name,
-      comments[counter].comment
-    );
-  }
-
-  return withTags("table", commentsTable);
+  return;
 };
 
 const refreshGuestBook = function(req, res) {
@@ -59,51 +20,80 @@ const refreshGuestBook = function(req, res) {
   });
 };
 
-const serveRequestedFile = function(url) {
+const getUrl = function(url) {
   if (url == "/") {
     return "./homepage.html";
-  }
-  if (url == "/guestBook.html") {
-    return "./guestBook.html";
   }
   return "." + url;
 };
 
-const app = (req, res) => {
-  let requestedUrl = serveRequestedFile(req.url);
-
-  if (req.url == "/guestBook.html" && req.method == "POST") {
-    let content = "";
-
-    req.on("data", chunk => {
-      content += chunk;
-    });
-
-    req.on("end", () => {
-      let comment = simplifyIntoObject(content);
-      allComments.unshift(comment);
-      fs.writeFile("./comments.json", JSON.stringify(allComments), err => {
-        console.log(err);
-      });
-      refreshGuestBook(req, res);
-    });
-    return;
-  }
-
-  if (req.url == "/guestBook.html" && req.method == "GET") {
-    refreshGuestBook(req, res);
-    return;
-  }
-
-  fs.exists(requestedUrl, exists => {
-    if (exists) {
-      fs.readFile(requestedUrl, (err, content) => {
-        send(res, content);
-      });
-    } else {
-      send(res, requestedUrl + " Not Found", 404);
+const renderBody = function(req, res) {
+  let requestedUrl = getUrl(req.url);
+  fs.readFile(requestedUrl, (err, content) => {
+    if (err) {
+      send(res, "Not Found", 404);
+      return;
     }
+    send(res, content);
   });
+  return;
 };
 
-module.exports = app;
+const isMatchingRoute = (req, route) => {
+  if (route.handler && !(route.method || route.url)) return true;
+  if (route.method == req.method && route.url == req.url) return true;
+  return false;
+};
+
+class CreateApp {
+  constructor() {
+    this.routes = [];
+  }
+
+  handler(req, res) {
+    let matchingRoutes = this.routes.filter(isMatchingRoute.bind(req));
+    let next = () => {
+      let current = matchingRoutes[0];
+      if (!current) {
+        return;
+      }
+      matchingRoutes.shift();
+      current.handler(req, res, next);
+    };
+    next();
+  }
+
+  use(handler) {
+    this.routes.push({ handler });
+  }
+  get(url, handler) {
+    this.routes.push({ url, method: "GET", handler });
+  }
+  post(url, handler) {
+    this.routes.push({ url, method: "POST", handler });
+  }
+}
+
+const renderForm = function(req, res) {
+  let content = "";
+  req.on("data", chunk => {
+    content += chunk;
+  });
+
+  req.on("end", () => {
+    let comment = simplifyIntoObject(content);
+    allComments.unshift(comment);
+    refreshGuestBook(req, res);
+    fs.writeFile("./comments.json", JSON.stringify(allComments), err => {
+      console.log(err);
+    });
+  });
+  return;
+};
+
+const app = new CreateApp();
+const requestHandler = app.handler.bind(app);
+app.use(renderBody);
+app.post("/guestBook.html", renderForm);
+
+module.exports = requestHandler;
