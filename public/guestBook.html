@@ -22,9 +22,19 @@
       .allCommentsView {
         border-top: 1px solid black;
       }
+      .refreshButton{
+        width: 70px;
+        height: 35px;
+        font-size: 25px;
+      }
+      .Comments {
+        font-size: 20px;
+        font-family: sans-serif;
+      }
       table {
         empty-cells: show;
       }
+
       td {
         /* font-size: 25px; */
         text-align: center;
@@ -33,6 +43,7 @@
         border-left: 1px solid dimgray;
       }
     </style>
+    <script src="./fetchComments.js"></script>
   </head>
   <body>
     <header>
@@ -64,22 +75,11 @@
           <input class="submitButton" type="submit" />
         </section>
       </form>
+      <hr />
     </div>
-    <div id="allComments" class="allCommentsView">
-      <table>
-        <thead>
-          <tr>
-            <td>DATE</td>
-            <td>NAME</td>
-            <td>COMMENT</td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-        </thead>
-      </table>
+    <div class="Comments">
+      Comments <button id="refresh" class="refreshButton">&#x21bb</button>
+      <div id="comments_section">###COMMENTS###</div>
     </div>
   </body>
 </html>
