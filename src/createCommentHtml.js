@@ -1,7 +1,7 @@
-const createCommentObject = function(content) {
+const createCommentObject = function(user, content) {
   const commentObject = new Object();
-  const [, author, , commentText] = content.split(/=|&/);
-  commentObject.name = author;
+  const commentText = content.split(/=|&/)[1];
+  commentObject.name = user;
   commentObject.comment = commentText;
   commentObject.time = new Date();
 

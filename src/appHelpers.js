@@ -7,6 +7,8 @@ const {
 } = require("./createCommentHtml");
 
 const guestBook = fs.readFileSync("./public/guestBook.html", "utf-8");
+const BEFORELOGIN = fs.readFileSync("./src/beforeLogin.html", "utf-8");
+const AFTERLOGIN = fs.readFileSync("./src/afterLogin.html", "utf-8");
 
 const send = (res, content, statusCode = 200) => {
   res.statusCode = statusCode;
@@ -21,13 +23,18 @@ const logRequest = function(req, res, next) {
 };
 
 const refreshGuestBook = function(req, res) {
-  fs.readFile("./public/guestBook.html", "utf8", (err, content) => {
-    let data = content.replace(
-      "###COMMENTS###",
-      createCommentHTML(allComments)
-    );
-    send(res, data);
-  });
+  let data = guestBook.replace(
+    "###COMMENTS###",
+    createCommentHTML(allComments)
+  );
+
+  if (req.cookies.username) {
+    let content = data.replace("##LOGGING##", AFTERLOGIN);
+    send(res, content.replace("###USER###", req.cookies.username));
+    return;
+  }
+  send(res, data.replace("##LOGGING##", BEFORELOGIN));
+  return;
 };
 
 const getUrl = function(url) {
@@ -55,10 +62,13 @@ const renderForm = function(req, res) {
   });
 
   req.on("end", () => {
-    let comment = createCommentObject(content);
+    let comment = createCommentObject(req.cookies.username, content);
     allComments.unshift(comment);
     let data = JSON.stringify(allComments);
-    refreshGuestBook(req, res);
+    res.writeHead(302, {
+      Location: "/guestBook.html"
+    });
+    res.end();
     fs.writeFile("./comments.json", data, err => {
       console.log(err);
     });
@@ -73,10 +83,51 @@ const renderRefreshComments = function(req, res, next) {
   return;
 };
 
+const loadCookies = function(req, res, next) {
+  let cookie = req.headers["cookie"];
+  let cookies = {};
+  if (cookie) {
+    cookie.split(";").forEach(element => {
+      let [name, value] = element.split("=");
+      cookies[name] = value;
+    });
+  }
+  req.cookies = cookies;
+  next();
+};
+
+const login = function(req, res, next) {
+  let content = "";
+  req.on("data", chunk => (content += chunk));
+  req.on("end", () => {
+    let username = content.split("=")[1];
+    res.setHeader("Set-Cookie", "username=" + username);
+
+    res.writeHead(302, {
+      Location: "/guestBook.html"
+    });
+    res.end();
+  });
+};
+
+const logout = function(req, res, next) {
+  res.setHeader(
+    "Set-Cookie",
+    "username=;expires=Thu, 01 Jan 1970 00:00:00 UTC"
+  );
+  res.writeHead(302, {
+    Location: "/guestBook.html"
+  });
+  res.end();
+};
+
 module.exports = {
-  refreshGuestBook: refreshGuestBook,
+  refreshGuestBook,
   renderForm,
   renderBody,
   logRequest,
-  renderRefreshComments
+  renderRefreshComments,
+  login,
+  logout,
+  loadCookies
 };

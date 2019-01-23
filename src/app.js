@@ -5,13 +5,19 @@ const {
   renderForm,
   renderBody,
   logRequest,
-  renderRefreshComments
+  renderRefreshComments,
+  login,
+  logout,
+  loadCookies
 } = require("./appHelpers");
 
 app.use(logRequest);
+app.use(loadCookies);
 app.get("/guestBook.html", refreshGuestBook);
 app.get("/comments", renderRefreshComments);
-app.post("/guestBook.html", renderForm);
+app.post("/login", login);
+app.post("/logout", logout);
+app.post("/sendComment", renderForm);
 app.use(renderBody);
 
 module.exports = app.handler.bind(app);
